@@ -3,13 +3,14 @@ require 'open-uri'
 require 'pry'
 require 'rspec'
 require 'rubocop'
+require 'csv'
 
 class MailMairie
   attr_accessor :what_db, :mairie_hash
 
-  # def initialize(what_db)
-  #   @what_db = what_db
-  # end
+  def initialize(what_db)
+    @what_db = what_db
+  end
 
   def create_hash_of_name_and_mail
 
@@ -58,11 +59,21 @@ class MailMairie
     name_and_emails_in_hash(get_townhall_name, extract_email_of_url(get_townhall_urls))
   end
 
+
+  def choose_what_db
+    case @what_db
+    when "json" then save_as_JSON
+    when "google" then save_as_spreadsheet
+    when "csv" then save_as_CSV
+    else puts "Tu n'as pas entré un format proposé"
+    end
+  end
+
   def save_as_JSON
     File.open("db/emails.json","w") do |f|
       f.write(@mairie_hash.to_json)
     end
-    puts "C'est enregistré dans 'db/mails.json'"
+    puts "C'est fait, c'est enregistré dans 'db/mails.json'"
   end
 
   def save_as_spreadsheet
@@ -86,6 +97,19 @@ class MailMairie
     end
     ws.save
     puts "C'est fait ! Tu peux retrouver la liste ici : https://docs.google.com/spreadsheets/d/1zhDU8avtbZdr9kg5u2vR22BWK7ayO2WUYgktTm44HK4/edit#gid=0"
+  end
+
+  def save_as_CSV
+    line = 1
+    CSV.open("db/emails.csv", "w") do |csv|
+    @mairie_hash.each do |i|
+      i.each do |k , v| 
+        csv << [line, k, v]
+        line += 1
+        end
+      end
+    end
+    puts "C'est fait, c'est enregistré dans 'db/mails.csv'"
   end
 
 end
